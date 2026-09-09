@@ -1,0 +1,61 @@
+﻿        const manager = new THREE.LoadingManager();
+        if (assetMap) {
+          manager.setURLModifier((url) => {
+            const nameOnly = url.split('/').pop().toLowerCase();
+            if (assetMap[nameOnly]) {
+              return assetMap[nameOnly];
+            }
+            return url;
+          });
+        }
+
+        const objLoader = new OBJLoader(manager);
+        let hasMaterials = false;
+        
+        if (mtlData) {
+          const mtlLoader = new MTLLoader(manager);
+          const materials = mtlLoader.parse(mtlData);
+          materials.preload();
+          
+          for (const matName in materials.materials) {
+             const mat = materials.materials[matName];
+             const stdMat = new THREE.MeshStandardMaterial({
+                color: mat.color,
+                map: mat.map,
+                side: THREE.DoubleSide,
+                roughness: 0.6
+             });
+             materials.materials[matName] = stdMat;
+          }
+          
+          objLoader.setMaterials(materials);
+          hasMaterials = true;
+        }
+
+        const object = objLoader.parse(objData);
+        
+        if (!hasMaterials && textureUrl) {
+           const textureLoader = new THREE.TextureLoader();
+           await new Promise((resolve, reject) => {
+             const texture = textureLoader.load(
+               textureUrl, 
+               () => {
+                 texture.colorSpace = THREE.SRGBColorSpace;
+                 resolve(texture);
+               },
+               undefined,
+               (err) => reject(err)
+             );
+             object.traverse((child) => {
+                 if (child.isMesh) {
+                     child.material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide, roughness: 0.6 });
+                 }
+             });
+           });
+        } else if (!hasMaterials) {
+           object.traverse((child) => {
+             if (child.isMesh) {
+                child.material = new THREE.MeshStandardMaterial({ color: 0xefd1d1, side: THREE.DoubleSide });
+             }
+           });
+        }

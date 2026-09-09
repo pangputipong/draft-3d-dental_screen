@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+.env
+.DS_Store
+uploads/
+__pycache__/
+*.pyc
+venv/
+env/
+.venv/
+.idea/
+.vscode/
+best_model_all.pt

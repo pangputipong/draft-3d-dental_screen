@@ -1,0 +1,9 @@
+﻿    } else if (!hasMaterials) {
+      object.traverse((child) => {
+        if (child.isMesh) {
+          child.material = new THREE.MeshStandardMaterial({ color: 0xcccccc, side: THREE.DoubleSide });
+        }
+      });
+    }
+
+    const box = new THREE.Box3().setFromObject(object);
